@@ -177,7 +177,7 @@ button {
 
 .signInBar,
 .signUpBar {
-  margin-top: 3rem;
+  /* margin-top: 3rem; */
   justify-content: flex-start;
   padding-left: 0%;
   padding-right: 0%;
@@ -206,6 +206,7 @@ button {
   height: 3rem;
   background-color: #f09b1a;
   border-radius: 50%;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.1);
 }
 @media (min-width: 1024px) {
   .signInButton,
@@ -213,13 +214,13 @@ button {
     margin-left: 3rem;
   }
 }
-
+/* 
 .socialLogin {
-  margin-top: 4rem;
+  margin-top: 2rem;
   display: flex;
   flex-direction: column;
   align-items: center;
-}
+} */
 
 .socialIconDiv {
   cursor: pointer;
@@ -227,7 +228,7 @@ button {
   justify-content: center;
   align-items: center;
   padding: 0.75rem;
-  margin: 1.5rem;
+  /* margin: 1.5rem; */
   width: 3rem;
   height: 3rem;
   background-color: #ffffff;
@@ -240,11 +241,11 @@ button {
 }
 
 .registerLink {
-  margin-top: 4rem;
+  /* margin-top: 4rem; */
   color: #f09b1a;
   font-weight: 600;
   text-align: center;
-  margin-bottom: 3rem;
+  /* margin-bottom: 3rem; */
 }
 
 @media (min-width: 1217px) {

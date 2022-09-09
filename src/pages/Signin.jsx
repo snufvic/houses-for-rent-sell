@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 import { ReactComponent as ArrowRightIcon } from "../assets/svg/keyboardArrowRightIcon.svg";
+import OAuth from "../components/OAuth";
 import visibilityIcon from "../assets/svg/visibilityIcon.svg";
 import { toast } from "react-toastify";
 
@@ -72,15 +73,15 @@ function SignIn() {
             <Link to="/forgot-password" className="forgotPasswordLink">
               Forgot Password
             </Link>
-            <div className="signInBar">
+            <div className="signInBar mt-3">
               <p className="signInText">Sign In</p>
               <button className="signInButton mb-2 mx-3">
                 <ArrowRightIcon fill="#ffffff" width="34px" height="34px" />
               </button>
             </div>
           </form>
-          {/* google oauth */}
-          <Link to="/sign-up" className="registerLink">
+          <OAuth />
+          <Link to="/sign-up" className="registerLink mt-4">
             Sign Up Instead
           </Link>
         </main>
