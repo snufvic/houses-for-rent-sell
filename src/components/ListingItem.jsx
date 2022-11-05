@@ -30,13 +30,13 @@ function ListingItem({ listing, id, onDelete }) {
           </p>
           <div className="categoryListingInfoDiv">
             <img src={bedIcon} alt="bed" />
-            <p className="categoryListingInfoText">
+            <p className="mt-3 categoryListingInfoText">
               {listing.bedrooms > 1
                 ? `${listing.bedrooms} Bedrooms`
                 : "1 Bedroom"}
             </p>
             <img src={bathtubIcon} alt="bath" />
-            <p className="categoryListingInfoText">
+            <p className="mt-3 categoryListingInfoText">
               {listing.bathrooms > 1
                 ? `${listing.bathrooms} Bathrooms`
                 : "1 Bathrooms"}

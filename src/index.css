@@ -416,8 +416,6 @@ button {
   display: flex;
   justify-content: space-between;
   max-width: 275px;
-  height: 25px;
-  line-height: 25px;
 }
 
 .categoryListingInfoText {
@@ -656,6 +654,8 @@ button {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  text-decoration: none;
+  color: #000000;
 }
 
 .listingText {
