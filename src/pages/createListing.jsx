@@ -1,8 +1,18 @@
 import { useState, useRef } from "react";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
+import {
+  getStorage,
+  ref,
+  uploadBytesResumable,
+  getDownloadURL,
+} from "firebase/storage";
+import { db } from "../firebase.config";
+import { v4 as uuidv4 } from "uuid";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import Spinner from "../components/Spinner";
+import config from "../config/default.json";
+import { toast } from "react-toastify";
 
 function CreateListing() {
   const [geoLocationEnabled, setGeoLocationEnabled] = useState(true);
@@ -39,6 +49,7 @@ function CreateListing() {
     longitude,
   } = formData;
 
+  const { mapKey, maxImages } = config;
   const auth = getAuth();
   const navigate = useNavigate();
   const isMounted = useRef(true);
@@ -61,8 +72,105 @@ function CreateListing() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isMounted]);
 
-  const onSubmit = (e) => {
+  const onSubmit = async (e) => {
     e.preventDefault();
+
+    setLoading(true);
+
+    if (discountedPrice > regularPrice) {
+      setLoading(false);
+      toast.error("Discounted price must be lower than Regular price");
+      return;
+    }
+
+    if (images.length > maxImages) {
+      setLoading(false);
+      toast.error(`Choose max ${maxImages} images`);
+      return;
+    }
+
+    let geolocation = {};
+    let location;
+
+    if (geoLocationEnabled) {
+      try {
+        // request google map API
+        const response = await fetch(
+          `https://maps.googleapis.com/maps/api/geocode/json?address=${address}&key=${process.env.REACT_APP_GEO_API_KEY}`
+        );
+        const data = await response.json();
+        geolocation.lat = data.results[0]?.geometry.location.lat ?? 0;
+        geolocation.lng = data.results[0]?.geometry.location.lng ?? 0;
+        location =
+          data.status === "ZERO_RESULTS"
+            ? undefined
+            : data.results[0]?.formatted_address;
+
+        if (location === undefined || location.includes("undefined")) {
+          setLoading(false);
+          toast.error("Enter a valid address");
+          return;
+        }
+      } catch {
+        setLoading(false);
+        toast.error("Could not fetch from API");
+      }
+    } else {
+      geolocation.lat = latitude;
+      geolocation.lng = longitude;
+      location = address;
+    }
+
+    //store an image in firebase
+    const storeImage = async (image) => {
+      return new Promise((resolve, reject) => {
+        const storage = getStorage();
+        const fileName = `${auth.currentUser.uid}_${image.name}_${uuidv4()}`;
+        const storageRef = ref(storage, "images/" + fileName);
+        const uploadTask = uploadBytesResumable(storageRef, image);
+
+        uploadTask.on(
+          "state_changed",
+          (snapshot) => {
+            const progress =
+              (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+            console.log("Upload is " + progress + "% done");
+            switch (snapshot.state) {
+              case "paused":
+                console.log("Upload is paused");
+                break;
+              case "running":
+                console.log("Upload is running");
+                break;
+            }
+          },
+          (error) => {
+            reject(error);
+          },
+          () => {
+            // Handle successful uploads on complete
+            // For instance, get the download URL: https://firebasestorage.googleapis.com/...
+            getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+              resolve(downloadURL);
+            });
+          }
+        );
+      });
+    };
+
+    const imgURLs = await Promise.all(
+      [...images].map((image) => {
+        return storeImage(image);
+      })
+    ).catch(() => {
+      setLoading(false);
+      toast.error("Images not uploaded");
+      return;
+    });
+
+    console.log(imgURLs);
+
+    setLoading(false);
   };
 
   const onMutate = (e) => {
@@ -81,17 +189,15 @@ function CreateListing() {
         images: e.target.files,
       }));
     } else {
-      console.log(e.target.id);
-      console.log(boolean);
       setFormData((prevState) => ({
         ...prevState,
         [e.target.id]: boolean ?? e.target.value,
-        discountedPrice:
-          e.target.id === "offer" && boolean === false
-            ? "0"
-            : e.target.id === "offer" && boolean === true
-            ? "0"
-            : e.target.value,
+        // discountedPrice:
+        //   e.target.id === "offer" && boolean === false
+        //     ? "0"
+        //     : e.target.id === "offer" && boolean === true
+        //     ? "0"
+        //     : e.target.value,
       }));
     }
   };
@@ -319,14 +425,14 @@ function CreateListing() {
 
           <label className="formLabel">Images</label>
           <p className="imagesInfo">
-            The first image will be the cover (max 6).
+            The first image will be the cover (max {maxImages}).
           </p>
           <input
             className="formInputFile"
             type="file"
             id="images"
             onChange={onMutate}
-            max="6"
+            max={maxImages}
             accept=".jpg,.png,.jpeg"
             multiple
             required
