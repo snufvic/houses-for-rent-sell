@@ -22,7 +22,7 @@ function Offers() {
   useEffect(() => {
     const fetchListings = async () => {
       try {
-        // get refference
+        // get reference
         const listingsRef = collection(db, "listings");
 
         // create query

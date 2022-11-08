@@ -6,6 +6,7 @@ import {
   uploadBytesResumable,
   getDownloadURL,
 } from "firebase/storage";
+import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { db } from "../firebase.config";
 import { v4 as uuidv4 } from "uuid";
 import { useNavigate } from "react-router-dom";
@@ -118,7 +119,6 @@ function CreateListing() {
     } else {
       geolocation.lat = latitude;
       geolocation.lng = longitude;
-      location = address;
     }
 
     //store an image in firebase
@@ -168,9 +168,25 @@ function CreateListing() {
       return;
     });
 
-    console.log(imgURLs);
+    const formDataCopy = {
+      ...formData,
+      imgURLs,
+      geolocation,
+      timestamp: serverTimestamp(),
+    };
+
+    formDataCopy.location = address;
+    delete formDataCopy.images;
+    delete formDataCopy.address;
+    delete formDataCopy.latitude;
+    delete formDataCopy.longitude;
+    !formDataCopy.offer && delete formDataCopy.discountedPrice;
+
+    const docRef = await addDoc(collection(db, "listings"), formDataCopy);
 
     setLoading(false);
+    toast.success("Listing saved");
+    navigate(`/category/${formDataCopy.type}/${docRef.id}`);
   };
 
   const onMutate = (e) => {
@@ -192,12 +208,6 @@ function CreateListing() {
       setFormData((prevState) => ({
         ...prevState,
         [e.target.id]: boolean ?? e.target.value,
-        // discountedPrice:
-        //   e.target.id === "offer" && boolean === false
-        //     ? "0"
-        //     : e.target.id === "offer" && boolean === true
-        //     ? "0"
-        //     : e.target.value,
       }));
     }
   };
