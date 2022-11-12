@@ -13,6 +13,7 @@ import "react-toastify/dist/ReactToastify.css";
 import Category from "./pages/Category";
 import CreateListing from "./pages/createListing";
 import Listing from "./pages/Listing";
+import Contact from "./pages/Contact";
 
 function App() {
   useEffect(() => {
@@ -34,6 +35,7 @@ function App() {
           <Route path="/sign-up" element={<Signup />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/create-listing" element={<CreateListing />} />
+          <Route path="/contact/:landlordId" element={<Contact />} />
           <Route
             path="/category/:categoryName/:listingId"
             element={<Listing />}
